@@ -25,50 +25,37 @@
         <section id="calendario" class="main-content active">
             <div class="filter-bar">
                 <div class="search-container">
-                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar equipo, grupo o ciudad...">
+                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar equipo, ciudad...">
                     <button class="btn-clear-search" id="btn-clear-search" style="display: none;">✕</button>
                 </div>
-                
                 <div class="quick-filters">
                     <button class="filter-chip active" data-filter="todos">Todos</button>
                     <button class="filter-chip" data-filter="favoritos">⭐ Favoritos</button>
-                    <button class="filter-chip" data-filter="oficina">💼 En Oficina</button>
-                    <button class="filter-chip" data-filter="casa">🏠 En Casa</button>
-                    <button class="btn-icon-filter" id="btn-filtros-avanzados">
-                        <span class="icon">⚙️</span> Filtros
-                    </button>
+                    <button class="filter-chip" data-filter="oficina">💼 Oficina</button>
+                    <button class="filter-chip" data-filter="casa">🏠 Casa</button>
+                    <button class="btn-icon-filter" id="btn-filtros-avanzados">⚙️ Filtros</button>
                 </div>
             </div>
 
             <div class="date-navigator">
                 <button class="nav-date-btn" id="prev-date">◀</button>
                 <div class="current-date-info">
-                    <h2 id="current-date-display">11 de junio</h2>
-                    <p id="current-day-label">Jueves - Día 1</p>
+                    <h2 id="current-date-display">Cargando...</h2>
                 </div>
                 <button class="nav-date-btn" id="next-date">▶</button>
             </div>
 
-            <div class="matches-timeline" id="matches-timeline">
-                </div>
+            <div class="matches-timeline" id="matches-timeline"></div>
         </section>
 
         <section id="mis-favoritos" class="main-content">
-            <div class="section-header">
-                <h2>Mis Selecciones Favoritas</h2>
-                <p>Selecciona los equipos que quieres seguir de cerca</p>
-            </div>
-            <div class="teams-selector-grid" id="teams-selector">
-                </div>
+            <div class="section-header"><h2>Mis Selecciones</h2></div>
+            <div class="teams-selector-grid" id="teams-selector"></div>
         </section>
 
         <section id="analisis" class="main-content">
-            <div class="section-header">
-                <h2>Análisis de Cobertura TV</h2>
-                <p>Estadísticas de canales para tus equipos favoritos</p>
-            </div>
-            <div id="analisis-container">
-                </div>
+            <div class="section-header"><h2>Resumen de Cobertura</h2></div>
+            <div id="analisis-container"></div>
         </section>
     </div>
 
@@ -81,50 +68,22 @@
             <div class="modal-body">
                 <div class="filtro-grupo">
                     <h4>📅 Rango de Fechas</h4>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <div style="flex: 1;">
-                            <label style="font-size: 12px; color: var(--text-secondary);">Desde:</label>
-                            <input type="date" id="filtro-fecha-desde" class="search-input" value="2026-06-11">
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="font-size: 12px; color: var(--text-secondary);">Hasta:</label>
-                            <input type="date" id="filtro-fecha-hasta" class="search-input" value="2026-07-19">
-                        </div>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="date" id="filtro-fecha-desde" class="search-input" value="2026-06-11">
+                        <input type="date" id="filtro-fecha-hasta" class="search-input" value="2026-07-19">
                     </div>
                 </div>
-
                 <div class="filtro-grupo">
-                    <h4>🏆 Fases del Torneo</h4>
+                    <h4>🏆 Fases</h4>
                     <div class="filtro-options" id="filtro-fases">
-                        <label class="checkbox-label"><input type="checkbox" value="grupos" data-grupo="fases"> Fase de Grupos</label>
-                        <label class="checkbox-label"><input type="checkbox" value="octavos" data-grupo="fases"> Octavos de Final</label>
-                        <label class="checkbox-label"><input type="checkbox" value="cuartos" data-grupo="fases"> Cuartos de Final</label>
-                        <label class="checkbox-label"><input type="checkbox" value="semis" data-grupo="fases"> Semifinales</label>
-                        <label class="checkbox-label"><input type="checkbox" value="finales" data-grupo="fases"> Final y 3er Puesto</label>
-                    </div>
-                </div>
-
-                <div class="filtro-grupo">
-                    <h4>💼 Disponibilidad</h4>
-                    <div class="filtro-options" id="filtro-disponibilidad">
-                        <label class="checkbox-label"><input type="checkbox" value="oficina" data-grupo="disponibilidad"> 💼 En Oficina (Horario laboral)</label>
-                        <label class="checkbox-label"><input type="checkbox" value="casa" data-grupo="disponibilidad"> 🏠 En Casa (Tiempo libre)</label>
-                        <label class="checkbox-label"><input type="checkbox" value="sueño" data-grupo="disponibilidad"> 🌙 Horas de sueño</label>
-                    </div>
-                </div>
-
-                <div class="filtro-grupo">
-                    <h4>📺 Canales de TV</h4>
-                    <div class="filtro-options" id="filtro-canales">
-                        <label class="checkbox-label"><input type="checkbox" value="caracol" data-grupo="canales"> 📺 Caracol</label>
-                        <label class="checkbox-label"><input type="checkbox" value="winsports" data-grupo="canales"> 📺 Win Sports+</label>
-                        <label class="checkbox-label"><input type="checkbox" value="directv" data-grupo="canales"> 📺 DirecTV</label>
+                        <label><input type="checkbox" value="grupos" data-grupo="fases"> Grupos</label>
+                        <label><input type="checkbox" value="finales" data-grupo="fases"> Finales</label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" id="limpiar-filtros">Limpiar filtros</button>
-                <button class="btn-primary" id="aplicar-filtros">Ver partidos</button>
+                <button class="btn-secondary" id="limpiar-filtros">Limpiar</button>
+                <button class="btn-primary" id="aplicar-filtros">Aplicar Filtros</button>
             </div>
         </div>
     </div>
