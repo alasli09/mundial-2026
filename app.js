@@ -7,6 +7,7 @@ class MundialApp {
         this.filtrosAvanzados = {
             fases: [],
             disponibilidad: [],
+            canales: [],
             fechaDesde: null,
             fechaHasta: null,
             activo: false
@@ -21,7 +22,7 @@ class MundialApp {
     }
 
     setupEventListeners() {
-        // Navegación Tabs
+        // Tabs
         document.querySelectorAll('.nav-btn').forEach(btn => {
             btn.addEventListener('click', () => {
                 document.querySelectorAll('.nav-btn, .main-content').forEach(el => el.classList.remove('active'));
@@ -49,28 +50,33 @@ class MundialApp {
             });
         });
 
-        // Navegación Fechas
+        // Flechas de fecha
         document.getElementById('prev-date').onclick = () => this.changeDate(-1);
         document.getElementById('next-date').onclick = () => this.changeDate(1);
 
-        // Modal
+        // Lógica del Modal (Perfeccionada)
         const modal = document.getElementById('modal-filtros');
         document.getElementById('btn-filtros-avanzados').onclick = () => modal.classList.add('active');
         modal.querySelector('.close-modal').onclick = () => modal.classList.remove('active');
-        
+
         document.getElementById('aplicar-filtros').onclick = () => {
-            this.filtrosAvanzados.fechaDesde = document.getElementById('filtro-fecha-desde').value;
-            this.filtrosAvanzados.fechaHasta = document.getElementById('filtro-fecha-hasta').value;
+            this.filtrosAvanzados.fechaDesde = document.getElementById('filtro-fecha-desde').value || null;
+            this.filtrosAvanzados.fechaHasta = document.getElementById('filtro-fecha-hasta').value || null;
             this.filtrosAvanzados.fases = Array.from(modal.querySelectorAll('input[data-grupo="fases"]:checked')).map(i => i.value);
             this.filtrosAvanzados.disponibilidad = Array.from(modal.querySelectorAll('input[data-grupo="disponibilidad"]:checked')).map(i => i.value);
-            this.filtrosAvanzados.activo = true;
+            this.filtrosAvanzados.canales = Array.from(modal.querySelectorAll('input[data-grupo="canales"]:checked')).map(i => i.value);
+            
+            this.filtrosAvanzados.activo = !!(this.filtrosAvanzados.fechaDesde || this.filtrosAvanzados.fechaHasta || this.filtrosAvanzados.fases.length || this.filtrosAvanzados.disponibilidad.length || this.filtrosAvanzados.canales.length);
+            
             modal.classList.remove('active');
             this.renderCalendar();
         };
 
         document.getElementById('limpiar-filtros').onclick = () => {
+            modal.querySelectorAll('input[type="checkbox"]').forEach(i => i.checked = false);
+            document.getElementById('filtro-fecha-desde').value = '2026-06-11';
+            document.getElementById('filtro-fecha-hasta').value = '2026-07-19';
             this.filtrosAvanzados.activo = false;
-            modal.querySelectorAll('input').forEach(i => i.checked = false);
             this.renderCalendar();
         };
     }
@@ -82,21 +88,24 @@ class MundialApp {
         this.renderCalendar();
     }
 
-    estaDisponible(hora) {
+    estaDisponible(fecha, hora) {
         const h = parseInt(hora.split(':')[0]);
-        return (h >= 8 && h < 17) ? 'oficina' : 'casa';
+        if (h >= 8 && h < 17) return 'oficina';
+        if (h >= 17 || (h >= 6 && h < 8)) return 'casa';
+        return 'sueño';
     }
 
     renderCalendar() {
         const container = document.getElementById('matches-timeline');
         const display = document.getElementById('current-date-display');
+        const dayLabel = document.getElementById('current-day-label');
         
-        // Detectar si debe ignorar el "día a día" para mostrar lista
+        // El modo lista se activa si hay filtros, búsqueda o rango de fechas
         const modoLista = this.filtrosAvanzados.activo || this.currentFilter !== 'todos' || this.searchQuery;
         
         let partidos = modoLista ? [...MUNDIAL_DATA.partidos] : MUNDIAL_DATA.partidos.filter(p => p.fecha === this.currentDate);
 
-        // Filtros de búsqueda
+        // 1. Filtro de búsqueda
         if (this.searchQuery) {
             partidos = partidos.filter(p => {
                 const e1 = MUNDIAL_DATA.equipos.find(e => e.id === p.equipo1)?.nombre.toLowerCase() || "";
@@ -105,21 +114,39 @@ class MundialApp {
             });
         }
 
-        // Filtros rápidos
-        if (this.currentFilter === 'favoritos') partidos = partidos.filter(p => this.favoritos.includes(p.equipo1) || this.favoritos.includes(p.equipo2));
-        if (this.currentFilter === 'oficina') partidos = partidos.filter(p => this.estaDisponible(p.hora) === 'oficina');
-        if (this.currentFilter === 'casa') partidos = partidos.filter(p => this.estaDisponible(p.hora) === 'casa');
-        
-        // Filtros avanzados (Rango de fecha)
+        // 2. Filtros Rápidos (Favoritos, Oficina, Casa)
+        if (this.currentFilter === 'favoritos') {
+            partidos = partidos.filter(p => this.favoritos.includes(p.equipo1) || this.favoritos.includes(p.equipo2));
+        } else if (this.currentFilter === 'oficina' || this.currentFilter === 'casa') {
+            partidos = partidos.filter(p => this.estaDisponible(p.fecha, p.hora) === this.currentFilter);
+        }
+
+        // 3. Filtros Avanzados (Rango de Fechas, Fases, Canales)
         if (this.filtrosAvanzados.activo) {
             if (this.filtrosAvanzados.fechaDesde) partidos = partidos.filter(p => p.fecha >= this.filtrosAvanzados.fechaDesde);
             if (this.filtrosAvanzados.fechaHasta) partidos = partidos.filter(p => p.fecha <= this.filtrosAvanzados.fechaHasta);
             if (this.filtrosAvanzados.fases.length) partidos = partidos.filter(p => this.filtrosAvanzados.fases.includes(p.fase));
-            if (this.filtrosAvanzados.disponibilidad.length) partidos = partidos.filter(p => this.filtrosAvanzados.disponibilidad.includes(this.estaDisponible(p.hora)));
+            if (this.filtrosAvanzados.canales.length) partidos = partidos.filter(p => p.canales.some(c => this.filtrosAvanzados.canales.includes(c)));
+            if (this.filtrosAvanzados.disponibilidad.length) partidos = partidos.filter(p => this.filtrosAvanzados.disponibilidad.includes(this.estaDisponible(p.fecha, p.hora)));
         }
 
-        display.textContent = modoLista ? "Resultados Filtrados" : this.currentDate;
+        // UI Header
+        if (modoLista) {
+            display.textContent = "Resultados Filtrados";
+            dayLabel.textContent = `${partidos.length} partidos encontrados`;
+            document.querySelector('.date-navigator').style.background = "#f0f7ff";
+        } else {
+            display.textContent = this.currentDate;
+            dayLabel.textContent = "Navegación por día";
+            document.querySelector('.date-navigator').style.background = "transparent";
+        }
 
+        if (partidos.length === 0) {
+            container.innerHTML = '<div style="padding:40px; text-align:center; color:#999;">No hay partidos para estos criterios.</div>';
+            return;
+        }
+
+        // Agrupar por fecha
         const grupos = partidos.reduce((acc, p) => {
             acc[p.fecha] = acc[p.fecha] || [];
             acc[p.fecha].push(p);
@@ -129,27 +156,38 @@ class MundialApp {
         container.innerHTML = Object.keys(grupos).sort().map(fecha => `
             <div class="date-group">
                 <div class="date-header">${fecha}</div>
-                ${grupos[fecha].map(p => this.createMatchCard(p)).join('')}
+                ${grupos[fecha].map(p => this.createMatchHTML(p)).join('')}
             </div>
-        `).join('') || '<div class="no-results">No se encontraron partidos.</div>';
+        `).join('');
     }
 
-    createMatchCard(p) {
-        const e1 = MUNDIAL_DATA.equipos.find(e => e.id === p.equipo1) || {nombre: 'TBD', bandera: '🏳️'};
-        const e2 = MUNDIAL_DATA.equipos.find(e => e.id === p.equipo2) || {nombre: 'TBD', bandera: '🏳️'};
+    createMatchHTML(p) {
+        const e1 = MUNDIAL_DATA.equipos.find(e => e.id === p.equipo1) || {nombre: 'TBD', bandera: '🏳️', ranking: '?'};
+        const e2 = MUNDIAL_DATA.equipos.find(e => e.id === p.equipo2) || {nombre: 'TBD', bandera: '🏳️', ranking: '?'};
         const esFav = this.favoritos.includes(p.equipo1) || this.favoritos.includes(p.equipo2);
-        const disp = this.estaDisponible(p.hora);
+        const disp = this.estaDisponible(p.fecha, p.hora);
+        const icons = { oficina: '💼', casa: '🏠', sueño: '🌙' };
 
         return `
             <div class="match-card ${esFav ? 'favorito' : ''}">
-                <div class="match-time">${p.hora} <br> <small>${disp === 'oficina' ? '💼' : '🏠'}</small></div>
+                <div class="match-time">${p.hora} <br> <span style="font-size:1.2rem">${icons[disp]}</span></div>
                 <div class="match-teams">
-                    <div class="team"><span>${e1.bandera}</span> ${e1.nombre}</div>
-                    <div class="team"><span>${e2.bandera}</span> ${e2.nombre}</div>
+                    <div class="team">
+                        <span class="flag">${e1.bandera}</span> 
+                        <span class="name">${e1.nombre}</span>
+                        <span class="rank">#${e1.ranking}</span>
+                    </div>
+                    <div class="team">
+                        <span class="flag">${e2.bandera}</span> 
+                        <span class="name">${e2.nombre}</span>
+                        <span class="rank">#${e2.ranking}</span>
+                    </div>
                 </div>
                 <div class="match-info">
-                    <div class="match-location">${p.estadio}<br>${p.ciudad}</div>
-                    <div class="match-channels">${p.canales.map(c => `<span class="tag tag-${c}">${c}</span>`).join('')}</div>
+                    <div class="match-location">${p.estadio}<br><strong>${p.ciudad}</strong></div>
+                    <div class="match-channels">
+                        ${p.canales.map(c => `<span class="tag tag-${c}">${c}</span>`).join('')}
+                    </div>
                 </div>
             </div>
         `;
@@ -157,6 +195,7 @@ class MundialApp {
 
     renderTeams() {
         const container = document.getElementById('teams-selector');
+        if (!container) return;
         container.innerHTML = MUNDIAL_DATA.equipos.map(e => `
             <div class="team-chip ${this.favoritos.includes(e.id) ? 'active' : ''}" onclick="app.toggleFav('${e.id}')">
                 ${e.bandera} ${e.nombre}
@@ -172,7 +211,8 @@ class MundialApp {
 
     renderAnalisis() {
         const container = document.getElementById('analisis-container');
-        container.innerHTML = `<div style="padding:20px; text-align:center">Aquí verás el resumen de canales para tus ${this.favoritos.length} favoritos.</div>`;
+        if (!container) return;
+        container.innerHTML = `<div style="padding:20px; text-align:center;">Analizando cobertura para tus ${this.favoritos.length} selecciones favoritas...</div>`;
     }
 
     renderAll() { this.renderCalendar(); this.renderTeams(); }
