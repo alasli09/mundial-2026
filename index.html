@@ -25,7 +25,7 @@
         <section id="calendario" class="main-content active">
             <div class="filter-bar">
                 <div class="search-container">
-                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar equipo, ciudad...">
+                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar equipo, grupo o ciudad...">
                     <button class="btn-clear-search" id="btn-clear-search" style="display: none;">✕</button>
                 </div>
                 <div class="quick-filters">
@@ -40,7 +40,8 @@
             <div class="date-navigator">
                 <button class="nav-date-btn" id="prev-date">◀</button>
                 <div class="current-date-info">
-                    <h2 id="current-date-display">Cargando...</h2>
+                    <h2 id="current-date-display">11 de junio</h2>
+                    <p id="current-day-label">Jueves - Día 1</p>
                 </div>
                 <button class="nav-date-btn" id="next-date">▶</button>
             </div>
@@ -49,12 +50,18 @@
         </section>
 
         <section id="mis-favoritos" class="main-content">
-            <div class="section-header"><h2>Mis Selecciones</h2></div>
+            <div class="section-header">
+                <h2>Mis Selecciones Favoritas</h2>
+                <p>Selecciona los equipos que quieres seguir de cerca</p>
+            </div>
             <div class="teams-selector-grid" id="teams-selector"></div>
         </section>
 
         <section id="analisis" class="main-content">
-            <div class="section-header"><h2>Resumen de Cobertura</h2></div>
+            <div class="section-header">
+                <h2>Análisis de Cobertura TV</h2>
+                <p>Estadísticas de canales para tus equipos favoritos</p>
+            </div>
             <div id="analisis-container"></div>
         </section>
     </div>
@@ -68,22 +75,34 @@
             <div class="modal-body">
                 <div class="filtro-grupo">
                     <h4>📅 Rango de Fechas</h4>
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: flex; gap: 10px; margin-top: 10px;">
                         <input type="date" id="filtro-fecha-desde" class="search-input" value="2026-06-11">
                         <input type="date" id="filtro-fecha-hasta" class="search-input" value="2026-07-19">
                     </div>
                 </div>
+
                 <div class="filtro-grupo">
-                    <h4>🏆 Fases</h4>
-                    <div class="filtro-options" id="filtro-fases">
-                        <label><input type="checkbox" value="grupos" data-grupo="fases"> Grupos</label>
-                        <label><input type="checkbox" value="finales" data-grupo="fases"> Finales</label>
+                    <h4>🏆 Fases del Torneo</h4>
+                    <div class="filtro-options">
+                        <label class="checkbox-label"><input type="checkbox" value="grupos" data-grupo="fases"> Fase de Grupos</label>
+                        <label class="checkbox-label"><input type="checkbox" value="octavos" data-grupo="fases"> Octavos</label>
+                        <label class="checkbox-label"><input type="checkbox" value="cuartos" data-grupo="fases"> Cuartos</label>
+                        <label class="checkbox-label"><input type="checkbox" value="semis" data-grupo="fases"> Semifinales</label>
+                        <label class="checkbox-label"><input type="checkbox" value="finales" data-grupo="fases"> Final</label>
+                    </div>
+                </div>
+
+                <div class="filtro-grupo">
+                    <h4>💼 Disponibilidad</h4>
+                    <div class="filtro-options">
+                        <label class="checkbox-label"><input type="checkbox" value="oficina" data-grupo="disponibilidad"> 💼 Oficina</label>
+                        <label class="checkbox-label"><input type="checkbox" value="casa" data-grupo="disponibilidad"> 🏠 Casa</label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" id="limpiar-filtros">Limpiar</button>
-                <button class="btn-primary" id="aplicar-filtros">Aplicar Filtros</button>
+                <button class="btn-primary" id="aplicar-filtros">Ver partidos</button>
             </div>
         </div>
     </div>
