@@ -28,12 +28,15 @@
                     <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar equipo, grupo o ciudad...">
                     <button class="btn-clear-search" id="btn-clear-search" style="display: none;">✕</button>
                 </div>
+                
                 <div class="quick-filters">
                     <button class="filter-chip active" data-filter="todos">Todos</button>
                     <button class="filter-chip" data-filter="favoritos">⭐ Favoritos</button>
-                    <button class="filter-chip" data-filter="oficina">💼 Oficina</button>
-                    <button class="filter-chip" data-filter="casa">🏠 Casa</button>
-                    <button class="btn-icon-filter" id="btn-filtros-avanzados">⚙️ Filtros</button>
+                    <button class="filter-chip" data-filter="oficina">💼 En Oficina</button>
+                    <button class="filter-chip" data-filter="casa">🏠 En Casa</button>
+                    <button class="btn-icon-filter" id="btn-filtros-avanzados">
+                        <span class="icon">⚙️</span> Filtros
+                    </button>
                 </div>
             </div>
 
@@ -46,7 +49,8 @@
                 <button class="nav-date-btn" id="next-date">▶</button>
             </div>
 
-            <div class="matches-timeline" id="matches-timeline"></div>
+            <div class="matches-timeline" id="matches-timeline">
+                </div>
         </section>
 
         <section id="mis-favoritos" class="main-content">
@@ -76,37 +80,57 @@
                 <div class="filtro-grupo">
                     <h4>📅 Rango de Fechas</h4>
                     <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <input type="date" id="filtro-fecha-desde" class="search-input" value="2026-06-11">
-                        <input type="date" id="filtro-fecha-hasta" class="search-input" value="2026-07-19">
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; color: var(--text-secondary);">Desde:</label>
+                            <input type="date" id="filtro-fecha-desde" class="search-input" value="2026-06-11">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 11px; color: var(--text-secondary);">Hasta:</label>
+                            <input type="date" id="filtro-fecha-hasta" class="search-input" value="2026-07-19">
+                        </div>
                     </div>
                 </div>
 
                 <div class="filtro-grupo">
                     <h4>🏆 Fases del Torneo</h4>
-                    <div class="filtro-options">
+                    <div class="filtro-options" id="filtro-fases">
                         <label class="checkbox-label"><input type="checkbox" value="grupos" data-grupo="fases"> Fase de Grupos</label>
-                        <label class="checkbox-label"><input type="checkbox" value="octavos" data-grupo="fases"> Octavos</label>
-                        <label class="checkbox-label"><input type="checkbox" value="cuartos" data-grupo="fases"> Cuartos</label>
+                        <label class="checkbox-label"><input type="checkbox" value="octavos" data-grupo="fases"> Octavos de Final</label>
+                        <label class="checkbox-label"><input type="checkbox" value="cuartos" data-grupo="fases"> Cuartos de Final</label>
                         <label class="checkbox-label"><input type="checkbox" value="semis" data-grupo="fases"> Semifinales</label>
-                        <label class="checkbox-label"><input type="checkbox" value="finales" data-grupo="fases"> Final</label>
+                        <label class="checkbox-label"><input type="checkbox" value="finales" data-grupo="fases"> Final y 3er Puesto</label>
                     </div>
                 </div>
 
                 <div class="filtro-grupo">
                     <h4>💼 Disponibilidad</h4>
-                    <div class="filtro-options">
-                        <label class="checkbox-label"><input type="checkbox" value="oficina" data-grupo="disponibilidad"> 💼 Oficina</label>
-                        <label class="checkbox-label"><input type="checkbox" value="casa" data-grupo="disponibilidad"> 🏠 Casa</label>
+                    <div class="filtro-options" id="filtro-disponibilidad">
+                        <label class="checkbox-label"><input type="checkbox" value="oficina" data-grupo="disponibilidad"> 💼 En Oficina</label>
+                        <label class="checkbox-label"><input type="checkbox" value="casa" data-grupo="disponibilidad"> 🏠 En Casa</label>
+                        <label class="checkbox-label"><input type="checkbox" value="sueño" data-grupo="disponibilidad"> 🌙 Horas de sueño</label>
+                    </div>
+                </div>
+
+                <div class="filtro-grupo">
+                    <h4>📺 Canales de TV</h4>
+                    <div class="filtro-options" id="filtro-canales">
+                        <label class="checkbox-label"><input type="checkbox" value="caracol" data-grupo="canales"> 📺 Caracol</label>
+                        <label class="checkbox-label"><input type="checkbox" value="winsports" data-grupo="canales"> 📺 Win Sports+</label>
+                        <label class="checkbox-label"><input type="checkbox" value="directv" data-grupo="canales"> 📺 DirecTV</label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" id="limpiar-filtros">Limpiar</button>
+                <button class="btn-secondary" id="limpiar-filtros">Limpiar filtros</button>
                 <button class="btn-primary" id="aplicar-filtros">Ver partidos</button>
             </div>
         </div>
     </div>
 
+    <script src="data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
     <script src="data.js"></script>
     <script src="app.js"></script>
 </body>
