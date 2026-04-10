@@ -13,6 +13,14 @@ class MundialApp {
         this.equiposSort = 'fifa'; // 'fifa' o 'alpha'
         this.searchQuery = '';
 
+        // Filtros avanzados combinables
+        this.filtrosAvanzados = {
+            fases: [], // ['grupos', 'octavos', 'cuartos', 'semis', 'finales']
+            disponibilidad: [], // ['casa', 'oficina', 'sueño']
+            canales: [], // ['caracol', 'winsports', 'directv']
+            activo: false // Si está usando filtros avanzados o no
+        };
+
         // Fechas únicas del mundial
         this.fechasMundial = [...new Set(MUNDIAL_DATA.partidos.map(p => p.fecha))].sort();
 
@@ -79,6 +87,65 @@ class MundialApp {
         return new Date(year, month - 1, day); // Mes es 0-indexed
     }
 
+    // Función para aplicar todos los filtros combinados
+    aplicarFiltrosCombinados(partidos) {
+        // Filtro de búsqueda por texto
+        if (this.searchQuery) {
+            const query = this.searchQuery.toLowerCase();
+            partidos = partidos.filter(p => {
+                const eq1 = this.getEquipo(p.equipo1);
+                const eq2 = this.getEquipo(p.equipo2);
+                return eq1.nombre.toLowerCase().includes(query) ||
+                       eq2.nombre.toLowerCase().includes(query) ||
+                       (p.grupo && p.grupo.toLowerCase().includes(query)) ||
+                       (p.ciudad && p.ciudad.toLowerCase().includes(query));
+            });
+        }
+
+        // Filtro rápido actual (si no es 'todos' ni 'hoy')
+        if (this.currentFilter === 'favoritos') {
+            partidos = partidos.filter(p => this.esFavorito(p) || this.destacados.includes(p.id));
+        } else if (this.currentFilter === 'casa') {
+            partidos = partidos.filter(p => this.estaDisponible(p.fecha, p.hora) === 'casa');
+        } else if (this.currentFilter === 'oficina') {
+            partidos = partidos.filter(p => this.estaDisponible(p.fecha, p.hora) === 'oficina');
+        } else if (this.currentFilter === 'sueño') {
+            partidos = partidos.filter(p => p.hora === '00:00' && !this.esFavorito(p) && !this.destacados.includes(p.id));
+        } else if (['caracol', 'winsports', 'directv'].includes(this.currentFilter)) {
+            partidos = partidos.filter(p => p.canales.includes(this.currentFilter));
+        }
+
+        // Filtros avanzados combinables
+        if (this.filtrosAvanzados.activo) {
+            // Filtro por fases
+            if (this.filtrosAvanzados.fases.length > 0) {
+                partidos = partidos.filter(p => this.filtrosAvanzados.fases.includes(p.fase));
+            }
+
+            // Filtro por disponibilidad
+            if (this.filtrosAvanzados.disponibilidad.length > 0) {
+                partidos = partidos.filter(p => {
+                    const disp = this.estaDisponible(p.fecha, p.hora);
+                    // 'sueño' es un caso especial
+                    if (this.filtrosAvanzados.disponibilidad.includes('sueño') && p.hora === '00:00') {
+                        return true;
+                    }
+                    return this.filtrosAvanzados.disponibilidad.includes(disp);
+                });
+            }
+
+            // Filtro por canales
+            if (this.filtrosAvanzados.canales.length > 0) {
+                partidos = partidos.filter(p => {
+                    // El partido debe estar en AL MENOS UNO de los canales seleccionados (OR)
+                    return this.filtrosAvanzados.canales.some(canal => p.canales.includes(canal));
+                });
+            }
+        }
+
+        return partidos;
+    }
+
     renderCalendar() {
         const fechaStr = this.currentDate;
         const fechaDisplay = document.getElementById('current-date-display');
@@ -92,29 +159,21 @@ class MundialApp {
         const diaSemana = DIAS_SEMANA_COMPLETO[fechaObj.getDay()];
         fechaDisplay.textContent = `${diaSemana} ${dia} de ${mes} 2026`;
 
-        // Obtener partidos según el filtro
+        // Obtener partidos base
         let partidos;
 
-        // Si el filtro es "todos" o "hoy", mostrar solo el día actual
-        if (this.currentFilter === 'todos' || this.currentFilter === 'hoy') {
+        // Si el filtro es "todos" o "hoy" Y no hay filtros avanzados activos, mostrar solo el día actual
+        if ((this.currentFilter === 'todos' || this.currentFilter === 'hoy') &&
+            !this.filtrosAvanzados.activo &&
+            !this.searchQuery) {
             partidos = MUNDIAL_DATA.partidos.filter(p => p.fecha === fechaStr);
         } else {
-            // Para otros filtros, buscar en TODOS los partidos del mundial
+            // Para otros filtros o cuando hay búsqueda/filtros avanzados, buscar en TODOS los partidos
             partidos = [...MUNDIAL_DATA.partidos];
-
-            if (this.currentFilter === 'favoritos') {
-                partidos = partidos.filter(p => this.esFavorito(p) || this.destacados.includes(p.id));
-            } else if (this.currentFilter === 'casa') {
-                partidos = partidos.filter(p => this.estaDisponible(p.fecha, p.hora) === 'casa');
-            } else if (this.currentFilter === 'oficina') {
-                partidos = partidos.filter(p => this.estaDisponible(p.fecha, p.hora) === 'oficina');
-            } else if (this.currentFilter === 'sueño') {
-                // Partidos a medianoche (00:00) que probablemente estés dormido
-                partidos = partidos.filter(p => p.hora === '00:00' && !this.esFavorito(p) && !this.destacados.includes(p.id));
-            } else if (['caracol', 'winsports', 'directv'].includes(this.currentFilter)) {
-                partidos = partidos.filter(p => p.canales.includes(this.currentFilter));
-            }
         }
+
+        // Aplicar filtros combinados
+        partidos = this.aplicarFiltrosCombinados(partidos);
 
         matchCount.textContent = `${partidos.length} partido${partidos.length !== 1 ? 's' : ''}`;
 
@@ -222,6 +281,7 @@ class MundialApp {
     }
 
     setupFiltrosRapidos() {
+        // Filtros chips
         document.querySelectorAll('.filter-chip').forEach(chip => {
             chip.addEventListener('click', () => {
                 const filter = chip.dataset.filter;
@@ -238,16 +298,48 @@ class MundialApp {
                 }
 
                 this.renderCalendar();
+                this.actualizarFiltrosActivosUI();
             });
         });
 
+        // Buscador
+        const searchInput = document.getElementById('search-input');
+        const btnClearSearch = document.getElementById('btn-clear-search');
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchQuery = e.target.value.trim();
+                btnClearSearch.style.display = this.searchQuery ? 'flex' : 'none';
+                this.renderCalendar();
+                this.actualizarFiltrosActivosUI();
+            });
+        }
+
+        if (btnClearSearch) {
+            btnClearSearch.addEventListener('click', () => {
+                this.searchQuery = '';
+                searchInput.value = '';
+                btnClearSearch.style.display = 'none';
+                this.renderCalendar();
+                this.actualizarFiltrosActivosUI();
+            });
+        }
+
+        // Limpiar todos los filtros
+        const btnClearAll = document.getElementById('btn-clear-all');
+        if (btnClearAll) {
+            btnClearAll.addEventListener('click', () => {
+                this.resetearFiltros();
+            });
+        }
+
         // Botón filtros avanzados
         document.getElementById('btn-filtros-avanzados').addEventListener('click', () => {
-            document.getElementById('filtros-modal').classList.add('active');
+            this.abrirModalFiltros();
         });
     }
 
-    // ==================== MODAL ====================
+    // ==================== MODAL Y FILTROS AVANZADOS ====================
     setupModal() {
         const modal = document.getElementById('filtros-modal');
 
@@ -256,18 +348,256 @@ class MundialApp {
         });
 
         document.getElementById('limpiar-filtros').addEventListener('click', () => {
-            document.querySelectorAll('.filtro-options input').forEach(cb => cb.checked = false);
-            document.querySelector('.filtro-options input[value="todos"]').checked = true;
+            this.limpiarFiltrosModal();
         });
 
         document.getElementById('aplicar-filtros').addEventListener('click', () => {
-            // Aquí se aplicarían filtros avanzados
+            this.aplicarFiltrosAvanzados();
             modal.classList.remove('active');
         });
 
         modal.querySelector('.modal-overlay').addEventListener('click', () => {
             modal.classList.remove('active');
         });
+
+        // Actualizar contador en tiempo real al seleccionar
+        document.querySelectorAll('#filtros-modal input[type="checkbox"]').forEach(cb => {
+            cb.addEventListener('change', () => {
+                this.actualizarContadorModal();
+            });
+        });
+    }
+
+    abrirModalFiltros() {
+        const modal = document.getElementById('filtros-modal');
+
+        // Cargar estado actual de filtros
+        this.cargarEstadoFiltrosModal();
+
+        // Actualizar contador
+        this.actualizarContadorModal();
+
+        modal.classList.add('active');
+    }
+
+    cargarEstadoFiltrosModal() {
+        // Cargar fases
+        document.querySelectorAll('input[data-grupo="fases"]').forEach(cb => {
+            cb.checked = this.filtrosAvanzados.fases.includes(cb.value);
+        });
+
+        // Cargar disponibilidad
+        document.querySelectorAll('input[data-grupo="disp"]').forEach(cb => {
+            cb.checked = this.filtrosAvanzados.disponibilidad.includes(cb.value);
+        });
+
+        // Cargar canales
+        document.querySelectorAll('input[data-grupo="canales"]').forEach(cb => {
+            cb.checked = this.filtrosAvanzados.canales.includes(cb.value);
+        });
+    }
+
+    limpiarFiltrosModal() {
+        document.querySelectorAll('#filtros-modal input[type="checkbox"]').forEach(cb => {
+            cb.checked = false;
+        });
+        this.actualizarContadorModal();
+    }
+
+    actualizarContadorModal() {
+        // Calcular cuántos partidos coincidirían con los filtros seleccionados
+        let fases = [];
+        let disponibilidad = [];
+        let canales = [];
+
+        document.querySelectorAll('input[data-grupo="fases"]:checked').forEach(cb => fases.push(cb.value));
+        document.querySelectorAll('input[data-grupo="disp"]:checked').forEach(cb => disponibilidad.push(cb.value));
+        document.querySelectorAll('input[data-grupo="canales"]:checked').forEach(cb => canales.push(cb.value));
+
+        // Simular filtros
+        const tempFiltros = { ...this.filtrosAvanzados, fases, disponibilidad, canales, activo: true };
+        const partidosFiltrados = this.simularFiltrosAvanzados(tempFiltros);
+
+        const contadorBtn = document.getElementById('contador-filtros');
+        if (contadorBtn) {
+            contadorBtn.textContent = `Ver ${partidosFiltrados.length}`;
+        }
+    }
+
+    simularFiltrosAvanzados(filtros) {
+        let partidos = [...MUNDIAL_DATA.partidos];
+
+        if (filtros.fases.length > 0) {
+            partidos = partidos.filter(p => filtros.fases.includes(p.fase));
+        }
+
+        if (filtros.disponibilidad.length > 0) {
+            partidos = partidos.filter(p => {
+                if (filtros.disponibilidad.includes('sueño') && p.hora === '00:00') return true;
+                const disp = this.estaDisponible(p.fecha, p.hora);
+                return filtros.disponibilidad.includes(disp);
+            });
+        }
+
+        if (filtros.canales.length > 0) {
+            partidos = partidos.filter(p => filtros.canales.some(c => p.canales.includes(c)));
+        }
+
+        return partidos;
+    }
+
+    aplicarFiltrosAvanzados() {
+        // Leer valores de los checkboxes
+        this.filtrosAvanzados.fases = [];
+        this.filtrosAvanzados.disponibilidad = [];
+        this.filtrosAvanzados.canales = [];
+
+        document.querySelectorAll('input[data-grupo="fases"]:checked').forEach(cb => {
+            this.filtrosAvanzados.fases.push(cb.value);
+        });
+
+        document.querySelectorAll('input[data-grupo="disp"]:checked').forEach(cb => {
+            this.filtrosAvanzados.disponibilidad.push(cb.value);
+        });
+
+        document.querySelectorAll('input[data-grupo="canales"]:checked').forEach(cb => {
+            this.filtrosAvanzados.canales.push(cb.value);
+        });
+
+        // Activar filtros avanzados si hay alguno seleccionado
+        this.filtrosAvanzados.activo =
+            this.filtrosAvanzados.fases.length > 0 ||
+            this.filtrosAvanzados.disponibilidad.length > 0 ||
+            this.filtrosAvanzados.canales.length > 0;
+
+        this.renderCalendar();
+        this.actualizarFiltrosActivosUI();
+    }
+
+    resetearFiltros() {
+        this.currentFilter = 'todos';
+        this.searchQuery = '';
+        this.filtrosAvanzados = {
+            fases: [],
+            disponibilidad: [],
+            canales: [],
+            activo: false
+        };
+
+        // Resetear UI
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        document.querySelector('.filter-chip[data-filter="todos"]').classList.add('active');
+
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) searchInput.value = '';
+
+        const btnClearSearch = document.getElementById('btn-clear-search');
+        if (btnClearSearch) btnClearSearch.style.display = 'none';
+
+        this.renderCalendar();
+        this.actualizarFiltrosActivosUI();
+    }
+
+    actualizarFiltrosActivosUI() {
+        const container = document.getElementById('active-filters');
+        const list = document.getElementById('active-filters-list');
+
+        if (!container || !list) return;
+
+        const filtros = [];
+
+        // Filtro rápido
+        if (this.currentFilter !== 'todos') {
+            const nombres = {
+                'hoy': '📅 Hoy',
+                'favoritos': '⭐ Mis Favoritos',
+                'casa': '🏠 En Casa',
+                'oficina': '💼 En Oficina',
+                'sueño': '🌙 Horas de Sueño',
+                'caracol': '📺 Caracol',
+                'winsports': '📺 Win+',
+                'directv': '📺 DirecTV'
+            };
+            filtros.push({ tipo: 'rapido', valor: this.currentFilter, label: nombres[this.currentFilter] || this.currentFilter });
+        }
+
+        // Búsqueda
+        if (this.searchQuery) {
+            filtros.push({ tipo: 'search', valor: this.searchQuery, label: `🔍 "${this.searchQuery}"` });
+        }
+
+        // Filtros avanzados
+        if (this.filtrosAvanzados.activo) {
+            this.filtrosAvanzados.fases.forEach(f => {
+                const nombres = { 'grupos': '🏆 Fase de Grupos', 'octavos': '🏆 Octavos', 'cuartos': '🏆 Cuartos', 'semis': '🏆 Semifinales', 'finales': '🏆 Finales' };
+                filtros.push({ tipo: 'avanzado', categoria: 'fase', valor: f, label: nombres[f] || f });
+            });
+
+            this.filtrosAvanzados.disponibilidad.forEach(d => {
+                const nombres = { 'casa': '🏠 En Casa', 'oficina': '💼 En Oficina', 'sueño': '🌙 Horas de Sueño' };
+                filtros.push({ tipo: 'avanzado', categoria: 'disp', valor: d, label: nombres[d] || d });
+            });
+
+            this.filtrosAvanzados.canales.forEach(c => {
+                const nombres = { 'caracol': '📺 Caracol', 'winsports': '📺 Win+', 'directv': '📺 DirecTV' };
+                filtros.push({ tipo: 'avanzado', categoria: 'canal', valor: c, label: nombres[c] || c });
+            });
+        }
+
+        // Mostrar u ocultar
+        if (filtros.length === 0) {
+            container.style.display = 'none';
+            return;
+        }
+
+        container.style.display = 'flex';
+
+        // Renderizar filtros
+        list.innerHTML = filtros.map(f => `
+            <span class="active-filter-chip" data-tipo="${f.tipo}" data-valor="${f.valor}" data-cat="${f.categoria || ''}">
+                ${f.label}
+                <button class="remove-filter">✕</button>
+            </span>
+        `).join('');
+
+        // Agregar eventos de eliminar
+        list.querySelectorAll('.active-filter-chip').forEach(chip => {
+            chip.querySelector('.remove-filter').addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.removerFiltroActivo(chip.dataset.tipo, chip.dataset.valor, chip.dataset.cat);
+            });
+        });
+    }
+
+    removerFiltroActivo(tipo, valor, categoria) {
+        if (tipo === 'rapido') {
+            this.currentFilter = 'todos';
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            document.querySelector('.filter-chip[data-filter="todos"]').classList.add('active');
+        } else if (tipo === 'search') {
+            this.searchQuery = '';
+            const searchInput = document.getElementById('search-input');
+            if (searchInput) searchInput.value = '';
+            const btnClearSearch = document.getElementById('btn-clear-search');
+            if (btnClearSearch) btnClearSearch.style.display = 'none';
+        } else if (tipo === 'avanzado') {
+            if (categoria === 'fase') {
+                this.filtrosAvanzados.fases = this.filtrosAvanzados.fases.filter(f => f !== valor);
+            } else if (categoria === 'disp') {
+                this.filtrosAvanzados.disponibilidad = this.filtrosAvanzados.disponibilidad.filter(d => d !== valor);
+            } else if (categoria === 'canal') {
+                this.filtrosAvanzados.canales = this.filtrosAvanzados.canales.filter(c => c !== valor);
+            }
+
+            // Verificar si quedan filtros avanzados
+            this.filtrosAvanzados.activo =
+                this.filtrosAvanzados.fases.length > 0 ||
+                this.filtrosAvanzados.disponibilidad.length > 0 ||
+                this.filtrosAvanzados.canales.length > 0;
+        }
+
+        this.renderCalendar();
+        this.actualizarFiltrosActivosUI();
     }
 
     // ==================== EQUIPOS SELECTOR ====================

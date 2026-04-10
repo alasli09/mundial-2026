@@ -27,6 +27,12 @@
         <section id="calendario" class="main-content active">
             <!-- Barra de filtros flotante -->
             <div class="filter-bar">
+                <!-- Buscador -->
+                <div class="search-container">
+                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar equipo, grupo o ciudad...">
+                    <button class="btn-clear-search" id="btn-clear-search" style="display: none;">✕</button>
+                </div>
+
                 <div class="filter-group">
                     <button class="filter-chip active" data-filter="todos">Todos</button>
                     <button class="filter-chip" data-filter="hoy">Hoy</button>
@@ -43,6 +49,13 @@
                 <button class="btn-filtros-avanzados" id="btn-filtros-avanzados">
                     ⚙️ Filtros Avanzados
                 </button>
+            </div>
+
+            <!-- Filtros activos (chips removibles) -->
+            <div class="active-filters" id="active-filters" style="display: none;">
+                <span class="active-filters-label">Filtros activos:</span>
+                <div class="active-filters-list" id="active-filters-list"></div>
+                <button class="btn-clear-all" id="btn-clear-all">Limpiar todo</button>
             </div>
 
             <!-- Vista calendario tipo SofaScore -->
@@ -255,48 +268,65 @@
                 <button class="modal-close" id="modal-close">×</button>
             </div>
             <div class="modal-body">
+                <div class="filtro-resumen" id="filtro-resumen">
+                    Selecciona filtros para combinarlos. Puedes elegir múltiples opciones.
+                </div>
+
                 <div class="filtro-grupo">
-                    <h4>Fase del torneo</h4>
-                    <div class="filtro-options">
+                    <h4>🏆 Fase del torneo</h4>
+                    <div class="filtro-options" id="filtro-fases">
                         <label class="checkbox-label">
-                            <input type="checkbox" value="todos" checked> Todas las fases
+                            <input type="checkbox" value="grupos" data-grupo="fases"> Fase de Grupos (72 partidos)
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" value="grupos"> Fase de Grupos
+                            <input type="checkbox" value="octavos" data-grupo="fases"> Octavos de Final
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" value="octavos"> Octavos
+                            <input type="checkbox" value="cuartos" data-grupo="fases"> Cuartos de Final
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" value="cuartos"> Cuartos
+                            <input type="checkbox" value="semis" data-grupo="fases"> Semifinales
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" value="semis"> Semifinales
-                        </label>
-                        <label class="checkbox-label">
-                            <input type="checkbox" value="finales"> Finales
+                            <input type="checkbox" value="finales" data-grupo="fases"> Finales (3er lugar + Final)
                         </label>
                     </div>
                 </div>
 
                 <div class="filtro-grupo">
-                    <h4>Horario</h4>
-                    <div class="filtro-options">
+                    <h4>🕐 Disponibilidad</h4>
+                    <div class="filtro-options" id="filtro-disponibilidad">
                         <label class="checkbox-label">
-                            <input type="checkbox" value="casa" checked> En casa
+                            <input type="checkbox" value="casa" data-grupo="disp"> 🏠 En casa (fuera de horario laboral)
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" value="oficina"> En oficina
+                            <input type="checkbox" value="oficina" data-grupo="disp"> 💼 En oficina (horario laboral L-V)
                         </label>
                         <label class="checkbox-label">
-                            <input type="checkbox" value="fines"> Fin de semana
+                            <input type="checkbox" value="sueño" data-grupo="disp"> 🌙 Horas de sueño (00:00 medianoche)
+                        </label>
+                    </div>
+                </div>
+
+                <div class="filtro-grupo">
+                    <h4>📺 Canales de TV</h4>
+                    <div class="filtro-options" id="filtro-canales">
+                        <p class="filtro-hint">Selecciona los canales que tienes disponibles (se mostrarán partidos que pasen en AL MENOS UNO de ellos):</p>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="caracol" data-grupo="canales"> 📺 Caracol (Gratis)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="winsports" data-grupo="canales"> 📺 Win Sports+ (~$40k/mes)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="directv" data-grupo="canales"> 📺 DirecTV (~$55k/mes)
                         </label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn-secondary" id="limpiar-filtros">Limpiar</button>
-                <button class="btn-primary" id="aplicar-filtros">Ver partidos filtrados</button>
+                <button class="btn-secondary" id="limpiar-filtros">Limpiar filtros</button>
+                <button class="btn-primary" id="aplicar-filtros"><span id="contador-filtros">Ver</span> partidos filtrados</button>
             </div>
         </div>
     </div>
