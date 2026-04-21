@@ -8,6 +8,7 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Header estilo apps deportivas -->
         <header class="app-header">
             <div class="header-content">
                 <div class="logo">
@@ -22,115 +23,330 @@
             </div>
         </header>
 
+        <!-- TAB: CALENDARIO (Homepage principal) -->
         <section id="calendario" class="main-content active">
+            <!-- Barra de filtros flotante -->
             <div class="filter-bar">
+                <!-- Buscador -->
                 <div class="search-container">
                     <input type="text" id="search-input" class="search-input" placeholder="🔍 Buscar equipo, grupo o ciudad...">
                     <button class="btn-clear-search" id="btn-clear-search" style="display: none;">✕</button>
                 </div>
-                
-                <div class="quick-filters">
+
+                <div class="filter-group">
                     <button class="filter-chip active" data-filter="todos">Todos</button>
-                    <button class="filter-chip" data-filter="favoritos">⭐ Favoritos</button>
-                    <button class="filter-chip" data-filter="oficina">💼 En Oficina</button>
+                    <button class="filter-chip" data-filter="hoy">Hoy</button>
+                    <button class="filter-chip" data-filter="favoritos">⭐ Mis Favoritos</button>
                     <button class="filter-chip" data-filter="casa">🏠 En Casa</button>
-                    <button class="btn-icon-filter" id="btn-filtros-avanzados">
-                        <span class="icon">⚙️</span> Filtros
-                    </button>
+                    <button class="filter-chip" data-filter="oficina">💼 En Oficina</button>
+                    <button class="filter-chip" data-filter="sueño" title="Partidos a medianoche (00:00)">🌙 Sueño</button>
                 </div>
+                <div class="filter-group canales">
+                    <button class="filter-chip canal caracol" data-filter="caracol">Caracol</button>
+                    <button class="filter-chip canal winsports" data-filter="winsports">Win+</button>
+                    <button class="filter-chip canal directv" data-filter="directv">DirecTV</button>
+                </div>
+                <button class="btn-filtros-avanzados" id="btn-filtros-avanzados">
+                    ⚙️ Filtros Avanzados
+                </button>
             </div>
 
-            <div class="date-navigator">
-                <button class="nav-date-btn" id="prev-date">◀</button>
-                <div class="current-date-info">
-                    <h2 id="current-date-display">11 de junio</h2>
-                    <p id="current-day-label">Jueves - Día 1</p>
-                </div>
-                <button class="nav-date-btn" id="next-date">▶</button>
+            <!-- Filtros activos (chips removibles) -->
+            <div class="active-filters" id="active-filters" style="display: none;">
+                <span class="active-filters-label">Filtros activos:</span>
+                <div class="active-filters-list" id="active-filters-list"></div>
+                <button class="btn-clear-all" id="btn-clear-all">Limpiar todo</button>
             </div>
 
-            <div class="matches-timeline" id="matches-timeline">
+            <!-- Vista calendario tipo SofaScore -->
+            <div class="calendar-view">
+                <!-- Navegación de fechas -->
+                <div class="date-navigator">
+                    <button class="nav-arrow" id="prev-day">‹</button>
+                    <div class="date-display">
+                        <span class="current-date" id="current-date-display">11 Junio 2026</span>
+                        <span class="match-count" id="match-count">8 partidos</span>
+                    </div>
+                    <button class="nav-arrow" id="next-day">›</button>
                 </div>
+
+                <!-- Timeline de partidos -->
+                <div class="matches-timeline" id="matches-timeline">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
         </section>
 
+        <!-- TAB: MIS FAVORITOS (Configuración) -->
         <section id="mis-favoritos" class="main-content">
-            <div class="section-header">
-                <h2>Mis Selecciones Favoritas</h2>
-                <p>Selecciona los equipos que quieres seguir de cerca</p>
+            <div class="config-container">
+                <div class="config-card">
+                    <h2>⚙️ Mi Configuración</h2>
+
+                    <!-- Horario laboral -->
+                    <div class="config-section">
+                        <h3>🏢 Horario Laboral</h3>
+                        <p class="config-desc">Define cuándo NO estás en casa (Lunes a Viernes)</p>
+                        <div class="horario-inputs">
+                            <div class="horario-bloque">
+                                <label>Mañana</label>
+                                <div class="time-range">
+                                    <input type="time" id="hora-inicio-m" value="08:00">
+                                    <span>a</span>
+                                    <input type="time" id="hora-fin-m" value="12:00">
+                                </div>
+                            </div>
+                            <div class="horario-bloque">
+                                <label>Tarde</label>
+                                <div class="time-range">
+                                    <input type="time" id="hora-inicio-t" value="14:00">
+                                    <span>a</span>
+                                    <input type="time" id="hora-fin-t" value="17:00">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selección de equipos con dropdown -->
+                    <div class="config-section">
+                        <h3>⭐ Mis Equipos Favoritos</h3>
+                        <p class="config-desc">Selecciona los equipos que NO te quieres perder</p>
+
+                        <div class="equipos-selector">
+                            <div class="selector-header">
+                                <div class="search-box">
+                                    <input type="text" id="equipo-search" placeholder="Buscar equipo...">
+                                    <span class="search-icon">🔍</span>
+                                </div>
+                                <div class="sort-options">
+                                    <button class="sort-btn active" data-sort="fifa">Por Ranking FIFA</button>
+                                    <button class="sort-btn" data-sort="alpha">A-Z</button>
+                                </div>
+                            </div>
+
+                            <div class="equipos-lista-container">
+                                <div class="equipos-lista" id="equipos-lista">
+                                    <!-- Se llena dinámicamente -->
+                                </div>
+                            </div>
+
+                            <div class="equipos-seleccionados">
+                                <h4>Tus favoritos:</h4>
+                                <div class="favoritos-tags" id="favoritos-tags">
+                                    <!-- Tags de favoritos -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Partidos destacados -->
+                    <div class="config-section">
+                        <h3>🎯 Partidos Destacados Manualmente</h3>
+                        <p class="config-desc">Marca partidos específicos que quieres ver, incluso sin involucrar a tus favoritos</p>
+                        <div class="partidos-destacados-lista" id="partidos-destacados-lista">
+                            <!-- Lista de partidos con checkbox -->
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="teams-selector-grid" id="teams-selector"></div>
         </section>
 
+        <!-- TAB: ANÁLISIS -->
         <section id="analisis" class="main-content">
-            <div class="section-header">
-                <h2>Análisis de Cobertura TV</h2>
-                <p>Estadísticas de canales para tus equipos favoritos</p>
+            <div class="analisis-container">
+                <div class="resumen-hero">
+                    <h2>📊 Análisis para tu Decisión</h2>
+                    <p class="analisis-subtitle">Basado en tus <span id="total-prioritarios">0</span> partidos seleccionados</p>
+                </div>
+
+                <div class="canales-comparison">
+                    <!-- Caracol -->
+                    <div class="canal-card caracol">
+                        <div class="canal-header">
+                            <div class="canal-logo">📺</div>
+                            <h3>Caracol</h3>
+                            <span class="canal-precio">GRATIS</span>
+                        </div>
+                        <div class="canal-stats">
+                            <div class="stat">
+                                <span class="stat-num" id="caracol-total">0</span>
+                                <span class="stat-label">Partidos totales</span>
+                            </div>
+                            <div class="stat highlight">
+                                <span class="stat-num" id="caracol-casa">0</span>
+                                <span class="stat-label">En casa</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-num" id="caracol-porcentaje">0%</span>
+                                <span class="stat-label">Cobertura</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Win Sports -->
+                    <div class="canal-card winsports">
+                        <div class="canal-header">
+                            <div class="canal-logo">📺</div>
+                            <h3>Win Sports+</h3>
+                            <span class="canal-precio">~$40.000/mes</span>
+                        </div>
+                        <div class="canal-stats">
+                            <div class="stat">
+                                <span class="stat-num" id="winsports-total">0</span>
+                                <span class="stat-label">Partidos totales</span>
+                            </div>
+                            <div class="stat highlight">
+                                <span class="stat-num" id="winsports-casa">0</span>
+                                <span class="stat-label">En casa</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-num" id="winsports-porcentaje">0%</span>
+                                <span class="stat-label">Cobertura</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- DirecTV -->
+                    <div class="canal-card directv">
+                        <div class="canal-header">
+                            <div class="canal-logo">📺</div>
+                            <h3>DirecTV</h3>
+                            <span class="canal-precio">~$55.000/mes</span>
+                        </div>
+                        <div class="canal-stats">
+                            <div class="stat">
+                                <span class="stat-num" id="directv-total">0</span>
+                                <span class="stat-label">Partidos totales</span>
+                            </div>
+                            <div class="stat highlight">
+                                <span class="stat-num" id="directv-casa">0</span>
+                                <span class="stat-label">En casa</span>
+                            </div>
+                            <div class="stat">
+                                <span class="stat-num" id="directv-porcentaje">0%</span>
+                                <span class="stat-label">Cobertura</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recomendación -->
+                <div class="recomendacion-card" id="recomendacion-card">
+                    <div class="recomendacion-icon">💡</div>
+                    <div class="recomendacion-content">
+                        <h3>Recomendación</h3>
+                        <div id="recomendacion-texto"></div>
+                    </div>
+                </div>
+
+                <!-- Tabla detallada -->
+                <div class="tabla-detalle">
+                    <h3>Desglose por disponibilidad</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Situación</th>
+                                <th class="col-caracol">Caracol</th>
+                                <th class="col-winsports">Win+</th>
+                                <th class="col-directv">DirecTV</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-desglose">
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            <div id="analisis-container"></div>
         </section>
     </div>
 
-    <div class="modal" id="modal-filtros">
+    <!-- Modal de filtros avanzados -->
+    <div class="modal" id="filtros-modal">
+        <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Filtros Avanzados</h3>
-                <button class="close-modal">&times;</button>
+                <h3>⚙️ Filtros Avanzados</h3>
+                <button class="modal-close" id="modal-close">×</button>
             </div>
             <div class="modal-body">
+                <div class="filtro-resumen" id="filtro-resumen">
+                    Selecciona filtros para combinarlos. Puedes elegir múltiples opciones.
+                </div>
+
+                <!-- RANGO DE FECHAS -->
                 <div class="filtro-grupo">
                     <h4>📅 Rango de Fechas</h4>
-                    <div style="display: flex; gap: 10px; margin-top: 10px;">
-                        <div style="flex: 1;">
-                            <label style="font-size: 11px; color: var(--text-secondary);">Desde:</label>
-                            <input type="date" id="filtro-fecha-desde" class="search-input" value="2026-06-11">
+                    <div class="rango-fechas">
+                        <div class="fecha-input">
+                            <label>Desde:</label>
+                            <input type="date" id="fecha-desde" min="2026-06-11" max="2026-07-19">
                         </div>
-                        <div style="flex: 1;">
-                            <label style="font-size: 11px; color: var(--text-secondary);">Hasta:</label>
-                            <input type="date" id="filtro-fecha-hasta" class="search-input" value="2026-07-19">
+                        <div class="fecha-input">
+                            <label>Hasta:</label>
+                            <input type="date" id="fecha-hasta" min="2026-06-11" max="2026-07-19">
                         </div>
                     </div>
+                    <p class="filtro-hint">Mundial: 11 junio - 19 julio 2026. Deja vacío para ver todas las fechas.</p>
                 </div>
 
                 <div class="filtro-grupo">
-                    <h4>🏆 Fases del Torneo</h4>
+                    <h4>🏆 Fase del torneo</h4>
                     <div class="filtro-options" id="filtro-fases">
-                        <label class="checkbox-label"><input type="checkbox" value="grupos" data-grupo="fases"> Fase de Grupos</label>
-                        <label class="checkbox-label"><input type="checkbox" value="octavos" data-grupo="fases"> Octavos de Final</label>
-                        <label class="checkbox-label"><input type="checkbox" value="cuartos" data-grupo="fases"> Cuartos de Final</label>
-                        <label class="checkbox-label"><input type="checkbox" value="semis" data-grupo="fases"> Semifinales</label>
-                        <label class="checkbox-label"><input type="checkbox" value="finales" data-grupo="fases"> Final y 3er Puesto</label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="grupos" data-grupo="fases"> Fase de Grupos (72 partidos)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="octavos" data-grupo="fases"> Octavos de Final
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="cuartos" data-grupo="fases"> Cuartos de Final
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="semis" data-grupo="fases"> Semifinales
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="finales" data-grupo="fases"> Finales (3er lugar + Final)
+                        </label>
                     </div>
                 </div>
 
                 <div class="filtro-grupo">
-                    <h4>💼 Disponibilidad</h4>
+                    <h4>🕐 Disponibilidad</h4>
                     <div class="filtro-options" id="filtro-disponibilidad">
-                        <label class="checkbox-label"><input type="checkbox" value="oficina" data-grupo="disponibilidad"> 💼 En Oficina</label>
-                        <label class="checkbox-label"><input type="checkbox" value="casa" data-grupo="disponibilidad"> 🏠 En Casa</label>
-                        <label class="checkbox-label"><input type="checkbox" value="sueño" data-grupo="disponibilidad"> 🌙 Horas de sueño</label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="casa" data-grupo="disp"> 🏠 En casa (fuera de horario laboral)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="oficina" data-grupo="disp"> 💼 En oficina (horario laboral L-V)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="sueño" data-grupo="disp"> 🌙 Horas de sueño (00:00 medianoche)
+                        </label>
                     </div>
                 </div>
 
                 <div class="filtro-grupo">
                     <h4>📺 Canales de TV</h4>
                     <div class="filtro-options" id="filtro-canales">
-                        <label class="checkbox-label"><input type="checkbox" value="caracol" data-grupo="canales"> 📺 Caracol</label>
-                        <label class="checkbox-label"><input type="checkbox" value="winsports" data-grupo="canales"> 📺 Win Sports+</label>
-                        <label class="checkbox-label"><input type="checkbox" value="directv" data-grupo="canales"> 📺 DirecTV</label>
+                        <p class="filtro-hint">Selecciona los canales que tienes disponibles (se mostrarán partidos que pasen en AL MENOS UNO de ellos):</p>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="caracol" data-grupo="canales"> 📺 Caracol (Gratis)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="winsports" data-grupo="canales"> 📺 Win Sports+ (~$40k/mes)
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" value="directv" data-grupo="canales"> 📺 DirecTV (~$55k/mes)
+                        </label>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn-secondary" id="limpiar-filtros">Limpiar filtros</button>
-                <button class="btn-primary" id="aplicar-filtros">Ver partidos</button>
+                <button class="btn-primary" id="aplicar-filtros"><span id="contador-filtros">Ver</span> partidos filtrados</button>
             </div>
         </div>
     </div>
 
-    <script src="data.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
     <script src="data.js"></script>
     <script src="app.js"></script>
 </body>
